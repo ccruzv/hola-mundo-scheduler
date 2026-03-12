@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hola-mundo-scheduler
+  namespace: default
+  labels:
+    app: hola-mundo-scheduler
+    version: "1.0.0"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hola-mundo-scheduler
+  template:
+    metadata:
+      labels:
+        app: hola-mundo-scheduler
+        version: "1.0.0"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+      containers:
+        - name: hola-mundo-scheduler
+          image: hola-mundo-scheduler:latest
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+          env:
+            - name: DOTNET_ENVIRONMENT
+              value: "Production"
+            - name: DOTNET_RUNNING_IN_CONTAINER
+              value: "true"
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "pgrep -f HolaMundoScheduler || exit 1"
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
