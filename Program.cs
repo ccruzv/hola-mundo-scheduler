@@ -1,10 +1,15 @@
-using HolaMundoScheduler;
+using HolaMundoScheduler.Messaging;
 using HolaMundoScheduler.Workers;
 
 var builder = Host.CreateApplicationBuilder(args);
 
 // Health checks
 builder.Services.AddHealthChecks();
+
+// RabbitMQ
+builder.Services.Configure<RabbitMQSettings>(
+    builder.Configuration.GetSection(RabbitMQSettings.SectionName));
+builder.Services.AddSingleton<RabbitMQPublisher>();
 
 // Register workers
 builder.Services.AddHostedService<HolaMundoWorker>();
